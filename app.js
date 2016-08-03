@@ -1,48 +1,32 @@
-var builder = require('botbuilder')
-var restify = require('restify')
+var restify = require('restify');
+var builder = require('botbuilder');
 
-var server = restify.createServer()
-server.listen(3978, function() {
-	console.log("listening on ", server.name, server.url)
-})
-var connector = new builder.ChatConnector({
-	appId: process.env.MICROSOFT_APP_ID,
-    appPassword: process.env.MICROSOFT_APP_PASSWORD
-})
+// Get secrets from server environment
+var botConnectorOptions = { 
+    appId: 'b4f44179-a489-4c94-a8b1-ea0b8067a02a', 
+    appSecret: 'oJ79dj9fcoU9KTWXngWc0Wx' 
+};
 
-var bot = new builder.UniversalBot(connector);
-server.post('/api/messages', connector.listen())
+// Create bot
+var bot = new builder.BotConnectorBot(botConnectorOptions);
+bot.add('/', function (session) {
+    
+    //respond with user's message
+    session.send("You said " + session.message.text);
+});
 
-var intents = new builder.IntentDialog();
-bot.dialog('/', intents)
-intents.matches(/^change name/i, [
-    function (session) {
-        session.beginDialog('/profile');
-    },
-    function (session, results) {
-        session.send('Ok... Changed your name to %s', session.userData.name);
-    }
-]);
+// Setup Restify Server
+var server = restify.createServer();
 
-intents.onDefault([
-    function (session, args, next) {
-        if (!session.userData.name) {
-            session.beginDialog('/profile');
-        } else {
-            next();
-        }
-    },
-    function (session, results) {
-        session.send('Hello %s!', session.userData.name);
-    }
-]);
+// Handle Bot Framework messages
+server.post('/api/messages', bot.verifyBotFramework(), bot.listen());
 
-bot.dialog('/profile', [
-    function (session) {
-        builder.Prompts.text(session, 'Hi! What is your name?');
-    },
-    function (session, results) {
-        session.userData.name = results.response;
-        session.endDialog();
-    }
-]);
+// Serve a static web page
+server.get(/.*/, restify.serveStatic({
+	'directory': '.',
+	'default': 'index.html'
+}));
+
+server.listen(process.env.port || 3978, function () {
+    console.log('%s listening to %s', server.name, server.url); 
+});

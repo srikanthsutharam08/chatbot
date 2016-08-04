@@ -71,10 +71,13 @@ bot.dialog('/profile', [
 
 bot.dialog('/deleteprofile', [
     function (session) {
-        builder.Prompts.text(session, 'Hi! Are you sure want to delete your profile?');
+        builder.Prompts.confirm(session, 'Hi! Are you sure want to delete your profile?');
     },
-    function (session, results) {
-        session.userData.name = null;
-        session.endDialog();
+	function (session, results) {
+		session.userData.deleteProfile = results.response
+		if(session.userData.deleteProfile) {
+			session.userData.name = null;
+			session.beginDialog('/');
+		}
     }
 ]);

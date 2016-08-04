@@ -4,7 +4,7 @@ var builder = require('botbuilder');
 // Get secrets from server environment
 //var botConnectorOptions = { 
 //    appId: 'b4f44179-a489-4c94-a8b1-ea0b8067a02a', 
-//    appSecret: 'oJ79dj9fcoU9KTWXngWc0Wx' 
+//    appPassword: 'oJ79dj9fcoU9KTWXngWc0Wx' 
 //};
 
 // Setup Restify Server
@@ -15,7 +15,7 @@ server.listen(process.env.port || 3978, function () {
 
 var connector = new builder.ChatConnector({
 	appId: 'b4f44179-a489-4c94-a8b1-ea0b8067a02a', 
-    appSecret: 'oJ79dj9fcoU9KTWXngWc0Wx' 
+    appPassword: 'oJ79dj9fcoU9KTWXngWc0Wx' 
 });
 // Create bot
 var bot = new builder.UniversalBot(connector);

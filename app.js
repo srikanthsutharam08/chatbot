@@ -48,13 +48,17 @@ intents.matches(/^delete profile/i, [
 
 intents.onDefault([
     function (session, args, next) {
+		session.send("session.name::"+ session.userData.name)
         if (!session.userData.name) {
+			session.send("inside if")
             session.beginDialog('/profile');
         } else {
+			session.send("inside else")
             next();
         }
     },
     function (session, results) {
+		session.send("inside 2nd function")
         session.send('Hello  Mr. %s!', session.userData.name);
     }
 ]);

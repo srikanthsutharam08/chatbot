@@ -2,43 +2,47 @@ var restify = require('restify');
 var builder = require('botbuilder');
 
 // Get secrets from server environment
-//var botConnectorOptions = { 
-//    appId: 'b4f44179-a489-4c94-a8b1-ea0b8067a02a', 
-//    appPassword: 'oJ79dj9fcoU9KTWXngWc0Wx' 
-//};
+var botConnectorOptions = { 
+    appId: process.env.BOTFRAMEWORK_APPID, 
+    appPassword: process.env.BOTFRAMEWORK_APPSECRET
+};
+
+// Create bot
+var connector = new builder.ChatConnector(botConnectorOptions);
+var bot = new builder.UniversalBot(connector);
 
 // Setup Restify Server
 var server = restify.createServer();
+
+// Handle Bot Framework messages
+server.post('/api/messages', connector.verifyBotFramework(), connector.listen());
+
 server.listen(process.env.port || 3978, function () {
     console.log('%s listening to %s', server.name, server.url); 
 });
 
-var connector = new builder.ChatConnector({
-	appId: 'b4f44179-a489-4c94-a8b1-ea0b8067a02a', 
-    appPassword: 'oJ79dj9fcoU9KTWXngWc0Wx' 
-});
-// Create bot
-var bot = new builder.UniversalBot(connector);
-// Handle Bot Framework messages
-server.post('/api/messages', connector.listen());
+//=========================================================
+// Bots Dialogs
+//=========================================================
 
-// Serve a static web page
-server.get(/.*/, restify.serveStatic({
-	'directory': '.',
-	'default': 'index.html'
-}));
-
-
-
-//var bot = new builder.BotConnectorBot(botConnectorOptions);
 var intents = new builder.IntentDialog();
-bot.dialog('/', intents)
+bot.dialog('/', intents);
+
 intents.matches(/^change name/i, [
     function (session) {
         session.beginDialog('/profile');
     },
     function (session, results) {
         session.send('Ok... Changed your name to %s', session.userData.name);
+    }
+]);
+
+intents.matches(/^delete profile/i, [
+    function (session) {
+        session.beginDialog('/deleteprofile');
+    },
+    function (session, results) {
+        session.send('Ok... Your profile has been deleted');
     }
 ]);
 
@@ -51,7 +55,7 @@ intents.onDefault([
         }
     },
     function (session, results) {
-        session.send('Hello %s!', session.userData.name);
+        session.send('Hello  Mr. %s!', session.userData.name);
     }
 ]);
 
@@ -61,6 +65,16 @@ bot.dialog('/profile', [
     },
     function (session, results) {
         session.userData.name = results.response;
+        session.endDialog();
+    }
+]);
+
+bot.dialog('/deleteprofile', [
+    function (session) {
+        builder.Prompts.text(session, 'Hi! Are you sure want to delete your profile?');
+    },
+    function (session, results) {
+        session.userData.name = null;
         session.endDialog();
     }
 ]);

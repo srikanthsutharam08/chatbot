@@ -79,5 +79,8 @@ bot.dialog('/deleteprofile', [
 			session.userData.name = null;
 			session.beginDialog('/');
 		}
-    }
+    },
+	function(session, results) {
+		session.beginDialog('/')
+	}
 ]);
